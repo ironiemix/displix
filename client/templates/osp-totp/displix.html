@@ -5,16 +5,19 @@
    <script type="text/javascript" src="totp.js"></script>
    <script type="text/javascript" src="jquery-1.10.1.min.js"></script>
    <script type="text/javascript">
-    
-    var displixuri="https://www.schulportfolio-online.de/qg/displix.php";
+    /* Configuration gets patched by displix script on the raspi-client */
+    var displixuri="#####DISPLIXURI#####";
+    var totpsecret="#####TOTPSECRET#####";
 
+
+    /* Init */
     var totpObj = new TOTP();
     var otp;
 
     $(document).ready(
         function() {
             setInterval(function() {
-                otp = totpObj.getOTP("JBSWY3DPEHPK3PXP");
+                otp = totpObj.getOTP(totpsecret);
                 datauri = displixuri;
                 $('#show').load(datauri + " #data", {otc: otp}); 
                 $('#lokal').text("URI: " + datauri + " OTP: " + otp);
@@ -27,6 +30,5 @@
     <body>
         <div id="lokal"></div>
         <div id="show" align="center"></div>
-
     </body>
 </html>
