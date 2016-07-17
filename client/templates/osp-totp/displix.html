@@ -1,0 +1,32 @@
+<html>
+   <head>
+   <link rel="stylesheet" type="text/css" href="bootstrap.min.css" />
+   <script type="text/javascript" src="sha.js"></script>
+   <script type="text/javascript" src="totp.js"></script>
+   <script type="text/javascript" src="jquery-1.10.1.min.js"></script>
+   <script type="text/javascript">
+    
+    var displixuri="https://www.schulportfolio-online.de/qg/displix.php";
+
+    var totpObj = new TOTP();
+    var otp;
+
+    $(document).ready(
+        function() {
+            setInterval(function() {
+                otp = totpObj.getOTP("JBSWY3DPEHPK3PXP");
+                datauri = displixuri;
+                $('#show').load(datauri + " #data", {otc: otp}); 
+                $('#lokal').text("URI: " + datauri + " OTP: " + otp);
+            }, 5000); 
+        }
+    );
+    
+    </script>
+    </head>
+    <body>
+        <div id="lokal"></div>
+        <div id="show" align="center"></div>
+
+    </body>
+</html>
