@@ -1,0 +1,83 @@
+#!/bin/bash 
+
+# Disply exportieren (Fernsteuerung)
+export DISPLAY=":0"
+# Einstellungen
+STARTDIR=~/start
+BROWSERCMD="midori -e Fullscreen  -a "
+INI="/home/pi/displix.conf"
+# Konfigurierbare Variablen
+VALUESFROMCONFIG="TEMPLATE DISPLIXURI TOTPSECRET DISPLAY_ON DISPLAY_OFF"
+# Debug?
+DEBUG=no
+# Zeit
+NOW=$(date +%H%M)
+
+declare -A SUBSTVAR
+
+for i in $VALUESFROMCONFIG; do
+	SUBSTVAR["$i"]=$(grep ^$i $INI | awk -F"=" '{print $2}' | tr -d " ")
+done
+
+if [ $DEBUG == "yes" ]; then 
+for i in $VALUESFROMCONFIG; do
+	echo -n "$i : " 
+	echo ${SUBSTVAR["$i"]}
+done
+fi
+
+function copyConfig() {
+	templatedir=~/displix/client/templates/${SUBSTVAR["TEMPLATE"]}
+	if [ -d $templatedir ]; then
+		echo "Kopiere Systemverzeichnis von $templatedir..."
+		rm -rf $STARTDIR
+		cp -ar $templatedir $STARTDIR
+		if [ -f $STARTDIR/displix.html ]; then 
+			for i in $VALUESFROMCONFIG; do
+				replacement=${SUBSTVAR["$i"]}
+				sed -i "s|#####${i}#####|$replacement|g" $STARTDIR/displix.html
+			done
+		else 
+			echo "Ungültiges Template, keine displix.html Datei gefunden"
+			exit 1
+		fi
+	else
+		echo "Template Verzeichnis nicht gefunden!"
+ 		echo -n "Versucht wurde: "
+		echo  $templatedir
+		exit 1
+	fi
+} 
+
+startBrowser() {
+	cd $STARTDIR
+	$BROWSERCMD displix.html
+}
+
+case $1 in
+start)
+	copyConfig		
+	startBrowser
+;;
+stop)
+;;
+restart)
+    $0 stop && $0 start
+;;
+status)
+    if [ $(pgrep -f "iii") ]; then
+        echo "OK";
+        exit 0;
+     else
+        echo "NOT running";
+        exit $?
+     fi
+;;
+cron)
+;;
+*)
+    echo "Usage: $0 {start|stop|reload|cron}";
+    exit 2
+;;
+ 
+esac
