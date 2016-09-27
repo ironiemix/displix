@@ -7,7 +7,7 @@ STARTDIR=~/start
 BROWSERCMD="midori -e Fullscreen  -a "
 INI="/home/pi/displix.conf"
 # Konfigurierbare Variablen
-VALUESFROMCONFIG="TEMPLATE DISPLIXURI TOTPSECRET DISPLAY_ON DISPLAY_OFF"
+VALUESFROMCONFIG="TEMPLATE DISPLIXURI TOTPSECRET DISPLAY_ON DISPLAY_OFF DELAYSECONDS INITIALDELAY"
 # Debug?
 DEBUG=no
 # Zeit
@@ -25,6 +25,7 @@ for i in $VALUESFROMCONFIG; do
 	echo ${SUBSTVAR["$i"]}
 done
 fi
+
 
 function copyConfig() {
 	templatedir=~/displix/client/templates/${SUBSTVAR["TEMPLATE"]}
@@ -60,16 +61,29 @@ start)
 	startBrowser
 ;;
 stop)
+	pidtokill=$(ps ax | grep pi/bin/displix | grep start | awk '{print $1}')
+	for p in $pidtokill; do
+		kill -9 $p
+	done
+
+	pidtokill=$(ps ax | grep midori | grep Full | awk '{print $1}')
+	for p in $pidtokill; do
+		kill -9 $p
+	done
+
 ;;
 restart)
     $0 stop && $0 start
 ;;
 status)
-    if [ $(pgrep -f "iii") ]; then
-        echo "OK";
+    if [ $(pgrep -f "midori") ]; then
+        echo -n "OK: ";
+	pid=$(ps ax | grep midori | grep Full | awk '{print $1}')
+	echo " 'midori' running with PID $pid"
+	ps ax | grep midori | grep Full 
         exit 0;
      else
-        echo "NOT running";
+        echo "No instances of midori are running!";
         exit $?
      fi
 ;;
